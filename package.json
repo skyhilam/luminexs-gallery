@@ -1,0 +1,18 @@
+{
+  "name": "@luminexs/gallery",
+  "version": "1.0.0",
+  "description": "nuxt2 gallery component",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "skylam",
+  "license": "ISC",
+  "peerDependencies": {
+    "vue": "^2.6.10",
+    "object-to-formdata": "^4.5.1",
+    "cropperjs": "^1.5.6",
+    "@nuxtjs/axios": "^5.13.6",
+    "@luminexs/loader": "1.0.0"
+  }
+}
