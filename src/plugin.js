@@ -20,11 +20,16 @@ export default function ({ $axios }) {
   // 打开图片弹窗
   global.open = function () {
     global.flag = true;
+    document.body.append(dialog.$el);
   };
 
   // 关闭图片弹窗
   global.close = function () {
     global.flag = false;
+    // 移除组件实例
+    dialog.$destroy();
+    // 移除组件dom
+    dialog.$el.remove();
   };
 
   // 创建组件实例
@@ -53,7 +58,7 @@ export default function ({ $axios }) {
     global.imageList = value;
   });
 
-  document.body.append(dialog.$el);
+  
 
 
 
