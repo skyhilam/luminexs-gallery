@@ -1,6 +1,6 @@
 {
   "name": "@luminexs/gallery",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "nuxt2 gallery component",
   "main": "src/index.js",
   "scripts": {
@@ -13,6 +13,10 @@
     "object-to-formdata": "^4.5.1",
     "cropperjs": "^1.5.6",
     "@nuxtjs/axios": "^5.13.6",
-    "@luminexs/loader": "1.0.0"
+    "@luminexs/loader": "1.0.0",
+    "@clover/nuxt2": "https://github.com/skyhilam/clover-nuxt2.git",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.1"
   }
 }

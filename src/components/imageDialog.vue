@@ -1,15 +1,33 @@
 <template>
-  <transition name="fade" mode="out-in">
-    <div v-if="dialogInfo.flag" class="image-dialog">
+  <transition
+    enter-active-class="ease-out duration-300"
+    leave-active-class="ease-out duration-300"
+    enter-class="opacity-0"
+    leave-to-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-class="opacity-100"
+  >
+    <div class="image-dialog">
       <loadingModule v-if="loading" />
-      <div class="dialog-header">
-        <div class="title">选择图片</div>
-        <div class="close" @click="closeDialog"></div>
+      <div class="flex item-center justify-between p-4 border-b border-black">
+        <div class="title">選擇圖片</div>
+        <div class="close" @click="close"></div>
       </div>
-      <div class="dialog-content">
-        <div class="image-item" v-for="(item, index) of gallery" :key="index">
-          <input type="checkbox" id="item.title" :value="item" v-model="selectImage" />
-          <img :src="item.url" :alt="item.file_name" @click="clickImage(item)" />
+      <div class="flex-grow grid sm:grid-cols-6 grid-cols-3 gap-4 p-4">
+        <div class="relative aspect-square bg-gray-50" v-for="(item, index) of gallery" :key="index">
+          <input
+            class="absolute top-4 right-4"
+            type="checkbox"
+            id="item.title"
+            :value="item"
+            v-model="images"
+          />
+          <img
+            class="w-full h-full object-contain"
+            :src="item.url"
+            :alt="item.file_name"
+            @click="selectImage(item)"
+          />
         </div>
       </div>
       <div class="dialog-footer">
@@ -23,17 +41,13 @@
               @change="selected"
             />
           </a>
-          <button
-            class="button"
-            @click="deleteGallery"
-            :disabled="selectImage.length == 0"
-          >
+          <button class="button" @click="deleteGallery" :disabled="images.length == 0">
             刪除圖片
           </button>
         </div>
         <div>
-          <button class="button" @click="getImageList">确定</button>
-          <button class="button" @click="closeDialog">取消</button>
+          <button class="button" @click="submit" type="button">确定</button>
+          <button class="button" @click="close" type="button">取消</button>
         </div>
       </div>
       <vCropper
@@ -41,7 +55,7 @@
         v-if="file"
         :file="file"
         @cancel="cancel"
-        @submit="submit"
+        @submit="upload"
         :maxSize="maxSize"
       />
     </div>
@@ -63,10 +77,6 @@ export default {
       type: String,
       default: "选择图片",
     },
-    dialogInfo: {
-      type: Object,
-      required: true,
-    },
   },
   components: { vCropper, loadingModule },
   data() {
@@ -74,7 +84,7 @@ export default {
       loading: false,
       aspectRatio: [1, 1],
       file: null,
-      selectImage: [],
+      images: [],
       maxSize: 1080 * 2,
       gallery: [],
     };
@@ -82,24 +92,24 @@ export default {
   methods: {
     // 删除gallery
     async deleteGallery() {
-      if (this.selectImage.length === 0) return;
+      if (this.images.length === 0) return;
       try {
         this.loading = true;
-        for (let item of this.selectImage) {
+        for (let item of this.images) {
           await this.http.delete(`api/gallery/${item.id}`);
         }
       } catch (e) {
         console.error(e);
       } finally {
-        this.selectImage = [];
-        this.getGallery();
+        this.images = [];
+        this.fetch();
       }
     },
-    // 获取gallery
-    async getGallery() {
+    // 獲取圖片
+    async fetch() {
       try {
         this.loading = true;
-        let { data } = await this.http.get('api/gallery')
+        let { data } = await this.http.get("api/gallery");
         this.gallery = data.data;
       } catch (e) {
         console.error(e);
@@ -107,26 +117,27 @@ export default {
         this.loading = false;
       }
     },
-    closeDialog() {
-      this.$emit("closeDialog", false);
+    close() {
+      this.images = [];
+      this.$emit("close");
     },
-    getImageList() {
-      this.$emit("getImageList", this.selectImage);
+    submit() {
+      this.$emit("submit", this.images);
+      this.close();
     },
-    clickImage(image) {
-      // 點擊圖片判斷是否選擇圖片，默認為未選中
-      let flag = false;
-      for (let index = 0; index < this.selectImage.length; index++) {
-        if (this.selectImage[index].id == image.id) {
-          // 點擊圖片已選擇則將圖片移除
-          flag = true;
-          this.selectImage.splice(index, 1);
+    selectImage(image) {
+      // check image is selected
+      if (this.images.length > 0) {
+        for (let index = 0; index < this.images.length; index++) {
+          if (this.images[index].id == image.id) {
+            this.images.splice(index, 1);
+            return;
+          }
         }
       }
-      // 點擊圖片未選擇則添加圖片
-      if (!flag) {
-        this.selectImage.push(image);
-      }
+
+      // add image
+      this.images.push(image);
     },
     // 選擇檔案
     selected(e) {
@@ -134,16 +145,19 @@ export default {
       if (!file) return;
       this.file = file;
     },
-    async submit(file) {
+    async upload(file) {
       try {
         this.loading = true;
-        await this.http.post("api/gallery", serialize({
-          image: file,
-        }));
+        await this.http.post(
+          "api/gallery",
+          serialize({
+            image: file,
+          })
+        );
       } catch (e) {
         console.error(e);
       } finally {
-        this.getGallery();
+        this.fetch();
         this.cancel();
       }
     },
@@ -153,7 +167,7 @@ export default {
     },
   },
   mounted() {
-    this.getGallery();
+    // this.fetch();
   },
 };
 </script>
@@ -274,14 +288,5 @@ export default {
   height: 1px;
   background-color: #000;
   transform: rotate(45deg);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.8s ease-in;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

@@ -8,29 +8,8 @@ export default function ({ $axios }) {
 
   // 创建弹窗组件构造函数
   const ImageDialog = Vue.extend(Dialog);
-  // 声明变量
-  const global = {};
 
-  // 图片弹窗索引
-  global.flag = false;
-  
-  // 选择的图片集合
-  global.imageList = [];
 
-  // 打开图片弹窗
-  global.open = function () {
-    global.flag = true;
-    document.body.append(dialog.$el);
-  };
-
-  // 关闭图片弹窗
-  global.close = function () {
-    global.flag = false;
-    // 移除组件实例
-    dialog.$destroy();
-    // 移除组件dom
-    dialog.$el.remove();
-  };
 
   // 创建组件实例
   const dialog = new ImageDialog({
@@ -48,19 +27,47 @@ export default function ({ $axios }) {
     },
   }).$mount();
 
-  // 挂载自定义事件
-  dialog.$on("closeDialog", (value) => {
-    global.flag = value;
+
+  dialog.$on('close', function () {
+    gallery.close();
   });
 
-  dialog.$on("getImageList", (value) => {
-    global.flag = false;
-    global.imageList = value;
+  dialog.$on('submit', function (data) {
+    gallery.selectedImages(data);
   });
 
-  
 
 
 
-  Vue.prototype.$gallery = global;
+  const gallery = {
+    images: [],
+
+    open() {
+      // 将组件实例挂载到body上
+      document.body.appendChild(dialog.$el);
+
+      // 獲取圖片列表
+      dialog.fetch();
+
+      return new Promise(resolve => {
+        dialog.$once('submit', function (data) {
+          resolve(data);
+        });
+      });
+    },
+
+    close() {
+      if (document.body.contains(dialog.$el))
+        document.body.removeChild(dialog.$el);
+    },
+
+    selectedImages(data) {
+      this.images = data;
+    }
+
+  }
+
+
+
+  Vue.prototype.$gallery = gallery;
 }
