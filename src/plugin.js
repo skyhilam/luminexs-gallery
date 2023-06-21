@@ -1,10 +1,10 @@
 import Vue from "vue";
 import Dialog from "@luminexs/gallery/src/components/imageDialog.vue";
-
+import axios from "axios";
 // get options
 const options = <%= serialize(options) %>;
 
-export default function ({ $axios }) {
+export default function (moduleOptions) {
 
   // 创建弹窗组件构造函数
   const ImageDialog = Vue.extend(Dialog);
@@ -15,7 +15,7 @@ export default function ({ $axios }) {
   const dialog = new ImageDialog({
     propsData: {
       dialogInfo: global,
-      http: $axios.create({
+      http: axios.create({
         baseURL: 'https://luminexs.com',
         headers: {
           Authorization: `Bearer ${options.token}`,
