@@ -64,7 +64,7 @@
 
 <script>
 import { first } from "lodash";
-import vCropper from "@luminexs/gallery/src/components/ImageCropper.vue";
+import vCropper from "@luminexs/components/image/ImageCropper.vue";
 import { serialize } from "object-to-formdata";
 import loadingModule from "@luminexs/gallery/src/components/icons/Loading.vue";
 export default {
