@@ -1,20 +1,17 @@
 <template>
-  <transition
-    enter-active-class="ease-out duration-300"
-    leave-active-class="ease-out duration-300"
-    enter-class="opacity-0"
-    leave-to-class="opacity-0"
-    enter-to-class="opacity-100"
-    leave-class="opacity-100"
-  >
-    <div class="image-dialog">
+  <modal contentClass="my-8 w-full max-w-screen-xl p-6">
+    <div class="h-[80vh] bg-white w-full flex flex-col">
       <loadingModule v-if="loading" />
-      <div class="flex item-center justify-between p-4 border-b border-black">
-        <div class="title">選擇圖片</div>
-        <div class="close" @click="close"></div>
+      <div class="flex item-center justify-between py-4 border-b border-black">
+        <h1 class="text-lg">選擇圖片</h1>
+        <button type="button" @click="close"><XIcon /></button>
       </div>
-      <div class="flex-grow grid sm:grid-cols-6 grid-cols-3 gap-4 p-4">
-        <div class="relative aspect-square bg-gray-50" v-for="(item, index) of gallery" :key="index">
+      <div class="flex-grow grid sm:grid-cols-6 grid-cols-3 gap-4 py-4">
+        <div
+          class="relative aspect-square bg-gray-50"
+          v-for="(item, index) of gallery"
+          :key="index"
+        >
           <input
             class="absolute top-4 right-4"
             type="checkbox"
@@ -30,44 +27,45 @@
           />
         </div>
       </div>
-      <div class="dialog-footer">
-        <div>
-          <a href="javascript:;" class="upload">
-            上傳圖片
-            <input
-              type="file"
-              accept="image/png,image/jpg,image/jpeg,image/webp"
-              name="image"
-              @change="selected"
-            />
-          </a>
-          <button class="button" @click="deleteGallery" :disabled="images.length == 0">
+      <div class="flex item-center justify-between border-t border-black py-4">
+        <div class="flex space-x-4">
+          <button class="btn" @click="openSelecter">上傳圖片</button>
+          <button class="btn" @click="deleteGallery" :disabled="images.length == 0">
             刪除圖片
           </button>
         </div>
-        <div>
-          <button class="button" @click="submit" type="button">确定</button>
-          <button class="button" @click="close" type="button">取消</button>
+        <div class="flex space-x-4">
+          <button class="btn" @click="submit" type="button">确定</button>
+          <button class="btn" @click="close" type="button">取消</button>
         </div>
       </div>
       <vCropper
-        :aspectRatio="aspectRatio"
+        :aspectRatio="0"
         v-if="file"
         :file="file"
         @cancel="cancel"
         @submit="upload"
-        :maxSize="maxSize"
       />
     </div>
-  </transition>
+    <input
+      type="file"
+      accept="image/png,image/jpg,image/jpeg,image/webp"
+      ref="file"
+      class="hidden"
+      @change="selected"
+    />
+  </modal>
 </template>
 
 <script>
 import { first } from "lodash";
 import vCropper from "@luminexs/components/image/ImageCropper.vue";
+import { XIcon } from "@vue-hero-icons/outline";
+import Modal from "@luminexs/components/modal/Modal.vue";
 import { serialize } from "object-to-formdata";
 import loadingModule from "@luminexs/gallery/src/components/icons/Loading.vue";
 export default {
+  components: { vCropper, loadingModule, Modal, XIcon },
   props: {
     http: {
       type: Function,
@@ -75,10 +73,10 @@ export default {
     },
     title: {
       type: String,
-      default: "选择图片",
+      default: "選擇圖片",
     },
   },
-  components: { vCropper, loadingModule },
+
   data() {
     return {
       loading: false,
@@ -90,6 +88,9 @@ export default {
     };
   },
   methods: {
+    openSelecter() {
+      this.$refs.file.click();
+    },
     // 删除gallery
     async deleteGallery() {
       if (this.images.length === 0) return;
@@ -121,10 +122,12 @@ export default {
       this.images = [];
       this.$emit("close");
     },
+    
     submit() {
       this.$emit("submit", this.images);
       this.close();
     },
+
     selectImage(image) {
       // check image is selected
       if (this.images.length > 0) {
@@ -135,16 +138,17 @@ export default {
           }
         }
       }
-
       // add image
       this.images.push(image);
     },
+
     // 選擇檔案
     selected(e) {
       const file = first(e.target.files);
       if (!file) return;
       this.file = file;
     },
+
     async upload(file) {
       try {
         this.loading = true;
@@ -166,127 +170,9 @@ export default {
       this.file = null;
     },
   },
-  mounted() {
-    // this.fetch();
-  },
 };
 </script>
 
 <style scoped>
-.image-dialog {
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  min-width: 600px;
-  min-height: 300px;
-  background-color: white;
-}
 
-.dialog-header {
-  display: flex;
-  flex-grow: 0;
-  justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #000;
-}
-
-.dialog-content {
-  display: flex;
-  flex-wrap: wrap;
-  flex-grow: 1;
-  overflow: auto;
-  padding: 10px;
-}
-
-.image-item {
-  position: relative;
-  margin: 10px;
-  width: 200px;
-  height: 100px;
-  border: 1px solid rgba(0, 0, 0, 0.5);
-}
-
-.image-item img {
-  width: 100%;
-  height: 100%;
-}
-
-.image-item input {
-  z-index: 10;
-  position: absolute;
-  top: 2px;
-  right: 2px;
-}
-
-.dialog-footer {
-  display: flex;
-  flex-grow: 0;
-  justify-content: space-between;
-  padding: 10px;
-  border-top: 1px solid #000;
-}
-
-.upload {
-  position: relative;
-  text-decoration: none;
-  padding: 5px 8px;
-  border: 1px solid #000;
-  margin: 0px 4px;
-}
-
-.upload input {
-  position: absolute;
-  overflow: hidden;
-  right: 0;
-  top: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.button {
-  display: inline-block;
-  margin: 0px 4px;
-  padding: 4px 8px;
-  border: 1px solid #000;
-}
-
-.title {
-  font-size: 18px;
-}
-
-.close {
-  position: relative;
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-}
-
-.close::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: 14px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: #000;
-  transform: rotate(-45deg);
-}
-
-.close::after {
-  content: "";
-  display: block;
-  position: absolute;
-  top: 14px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background-color: #000;
-  transform: rotate(45deg);
-}
 </style>

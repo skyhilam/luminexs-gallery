@@ -28,13 +28,13 @@ export default function (moduleOptions) {
   }).$mount();
 
 
-  dialog.$on('close', function () {
-    gallery.close();
-  });
+  // dialog.$on('close', function () {
+  //   gallery.close();
+  // });
 
-  dialog.$on('submit', function (data) {
-    gallery.selectedImages(data);
-  });
+  // dialog.$on('submit', function (data) {
+  //   gallery.selectedImages(data);
+  // });
 
 
 
@@ -51,19 +51,21 @@ export default function (moduleOptions) {
 
       return new Promise(resolve => {
         dialog.$once('submit', function (data) {
+          console.log('submit', data);
           resolve(data);
         });
+
+        dialog.$once('close', function () {
+          if (document.body.contains(dialog.$el))
+            document.body.removeChild(dialog.$el);
+          
+          resolve(null);
+        })
+
       });
     },
 
-    close() {
-      if (document.body.contains(dialog.$el))
-        document.body.removeChild(dialog.$el);
-    },
-
-    selectedImages(data) {
-      this.images = data;
-    }
+  
 
   }
 
