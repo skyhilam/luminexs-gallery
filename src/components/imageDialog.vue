@@ -107,10 +107,14 @@ export default {
       }
     },
     // 獲取圖片
-    async fetch() {
+    async fetch(gallery = 'default') {
       try {
         this.loading = true;
-        let { data } = await this.http.get("api/gallery");
+        let { data } = await this.http.get("api/gallery", {
+          params: {
+            gallery,
+          },
+        });
         this.gallery = data.data;
       } catch (e) {
         console.error(e);

@@ -42,30 +42,29 @@ export default function (moduleOptions) {
   const gallery = {
     images: [],
 
-    open() {
+    open(gallery = 'default') {
       // 将组件实例挂载到body上
       document.body.appendChild(dialog.$el);
 
       // 獲取圖片列表
-      dialog.fetch();
+      dialog.fetch(gallery);
 
       return new Promise(resolve => {
         dialog.$once('submit', function (data) {
-          console.log('submit', data);
           resolve(data);
         });
 
         dialog.$once('close', function () {
           if (document.body.contains(dialog.$el))
             document.body.removeChild(dialog.$el);
-          
+
           resolve(null);
         })
 
       });
     },
 
-  
+
 
   }
 
