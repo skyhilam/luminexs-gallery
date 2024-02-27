@@ -6,7 +6,9 @@
         <h1 class="text-lg">選擇圖片</h1>
         <button type="button" @click="close"><XIcon /></button>
       </div>
-      <div class="flex-grow grid sm:grid-cols-6 grid-cols-3 gap-4 py-4">
+      <div
+        class="flex-grow overflow-y-auto overflow-x-hidden grid sm:grid-cols-5 grid-cols-3 gap-4 py-4"
+      >
         <div
           class="relative aspect-square bg-gray-50"
           v-for="(item, index) of gallery"
@@ -26,6 +28,9 @@
             @click="selectImage(item)"
           />
         </div>
+      </div>
+      <div class="my-4 ">
+        <Pagination :meta="meta" @switched="fetch(collection, $event)" />
       </div>
       <div class="flex item-center justify-between border-t border-black py-4">
         <div class="flex space-x-4">
@@ -64,8 +69,9 @@ import { XIcon } from "@vue-hero-icons/outline";
 import Modal from "@luminexs/components/modal/Modal.vue";
 import { serialize } from "object-to-formdata";
 import loadingModule from "@luminexs/gallery/src/components/icons/Loading.vue";
+import Pagination from "./Pagination.vue";
 export default {
-  components: { vCropper, loadingModule, Modal, XIcon },
+  components: { vCropper, loadingModule, Modal, XIcon, Pagination },
   props: {
     http: {
       type: Function,
@@ -85,6 +91,8 @@ export default {
       images: [],
       maxSize: 1080 * 2,
       gallery: [],
+      meta: {},
+      collection: "default",
     };
   },
   methods: {
@@ -107,15 +115,18 @@ export default {
       }
     },
     // 獲取圖片
-    async fetch(gallery = 'default') {
+    async fetch(gallery, page) {
+      if (gallery) this.collection = gallery;
       try {
         this.loading = true;
         let { data } = await this.http.get("api/gallery", {
           params: {
-            gallery,
+            gallery: this.collection,
+            page: page || 1,
           },
         });
         this.gallery = data.data;
+        this.meta = data.meta;
       } catch (e) {
         console.error(e);
       } finally {
@@ -126,7 +137,7 @@ export default {
       this.images = [];
       this.$emit("close");
     },
-    
+
     submit() {
       this.$emit("submit", this.images);
       this.close();
@@ -160,6 +171,7 @@ export default {
           "api/gallery",
           serialize({
             image: file,
+            gallery: this.collection,
           })
         );
       } catch (e) {
@@ -177,6 +189,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
