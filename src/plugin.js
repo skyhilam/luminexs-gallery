@@ -16,7 +16,7 @@ export default function (moduleOptions) {
     propsData: {
       dialogInfo: global,
       http: axios.create({
-        baseURL: 'https://luminexs.com',
+        baseURL: options.url ?? 'https://luminexs.com',
         headers: {
           Authorization: `Bearer ${options.token}`,
           Accept: "application/json",
@@ -42,7 +42,18 @@ export default function (moduleOptions) {
   const gallery = {
     images: [],
 
-    open(gallery = 'default') {
+    open(gallery = 'default', options = null) {
+
+      // set options to dialog props
+      if (options) {
+        for (const key in options) {
+          // console.log(key);
+          dialog[key] = options[key];
+          // dialog.$set(key, options[key]);
+        }
+      }
+
+
       // 将组件实例挂载到body上
       document.body.appendChild(dialog.$el);
 

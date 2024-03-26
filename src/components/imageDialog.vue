@@ -3,7 +3,7 @@
     <div class="h-[80vh] bg-white w-full flex flex-col">
       <loadingModule v-if="loading" />
       <div class="flex item-center justify-between py-4 border-b border-black">
-        <h1 class="text-lg">選擇圖片</h1>
+        <h1 class="text-lg">{{ title }}</h1>
         <button type="button" @click="close"><XIcon /></button>
       </div>
       <div
@@ -89,6 +89,7 @@ export default {
       aspectRatio: [1, 1],
       file: null,
       images: [],
+      maxImages: 10,
       maxSize: 1080 * 2,
       gallery: [],
       meta: {},
@@ -146,6 +147,7 @@ export default {
     selectImage(image) {
       // check image is selected
       if (this.images.length > 0) {
+        // 檢查是否已經選擇, 如果有則刪除
         for (let index = 0; index < this.images.length; index++) {
           if (this.images[index].id == image.id) {
             this.images.splice(index, 1);
@@ -153,6 +155,15 @@ export default {
           }
         }
       }
+
+      console.log(this.images.length, this.maxImages);
+      
+      // check max images
+      if (this.images.length >= this.maxImages) {
+        alert("最多只能選擇" + this.maxImages + "張圖片");
+        return;
+      }
+
       // add image
       this.images.push(image);
     },
