@@ -1,6 +1,11 @@
 import Vue from "vue";
 import Dialog from "@luminexs/gallery/src/components/imageDialog.vue";
 import axios from "axios";
+import { Popup, ImagePreview, Image as VanImage  } from 'vant';
+import 'vant/lib/index.css';
+Vue.use(Popup);
+Vue.use(ImagePreview);
+Vue.use(VanImage);
 // get options
 const options = <%= serialize(options) %>;
 
@@ -56,7 +61,7 @@ export default function (moduleOptions) {
 
       // 将组件实例挂载到body上
       document.body.appendChild(dialog.$el);
-
+      
       // 獲取圖片列表
       dialog.fetch(gallery);
 

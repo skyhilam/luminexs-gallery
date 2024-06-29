@@ -1,13 +1,17 @@
 <template>
-  <modal contentClass="my-8 w-full max-w-screen-xl p-6">
-    <div class="h-[80vh] bg-white w-full flex flex-col">
-      <loadingModule v-if="loading" />
-      <div class="flex item-center justify-between py-4 border-b border-black">
-        <h1 class="text-lg">{{ title }}</h1>
-        <button type="button" @click="close"><XIcon /></button>
+  <van-popup
+    v-model="visible"
+    ref="popup"
+    class="w-full sm:max-w-[80vw] bg-white sm:rounded"
+  >
+    <loadingModule v-if="loading" />
+    <div class="sm:h-[80vh] h-[100vh] max-h-full overflow-y-auto flex flex-col">
+      <div class="flex item-center justify-between py-4 border-b border-black px-2">
+        <h2>{{ title }}</h2>
+        <button type="button" class="text-primary" @click="close"><XIcon /></button>
       </div>
       <div
-        class="flex-grow overflow-y-auto overflow-x-hidden grid sm:grid-cols-5 grid-cols-3 gap-4 py-4"
+        class="flex-grow overflow-y-auto overflow-x-hidden grid sm:grid-cols-5 grid-cols-3 gap-4 p-4"
       >
         <div
           class="relative aspect-square bg-gray-50"
@@ -29,28 +33,51 @@
           />
         </div>
       </div>
-      <div class="my-4 ">
-        <Pagination :meta="meta" @switched="fetch(collection, $event)" />
-      </div>
-      <div class="flex item-center justify-between border-t border-black py-4">
-        <div class="flex space-x-4">
-          <button class="btn" @click="openSelecter">上傳圖片</button>
-          <button class="btn" @click="deleteGallery" :disabled="images.length == 0">
-            刪除圖片
-          </button>
+      <div class="flex-0">
+        <div class="px-2 py-4 ">
+          <Pagination :meta="meta" @switched="fetch(collection, $event)" />
         </div>
-        <div class="flex space-x-4">
-          <button class="btn" @click="submit" type="button">确定</button>
-          <button class="btn" @click="close" type="button">取消</button>
+        <div class="flex item-center justify-between border-t border-black py-4 px-2">
+          <div class="flex space-x-4">
+            <button
+              class="bg-primary text-white px-4 py-2 rounded text-sm"
+              @click="openSelecter"
+            >
+              上傳圖片
+            </button>
+            <button
+              class="bg-primary text-white px-4 py-2 rounded text-sm"
+              @click="deleteGallery"
+              v-if="images.length != 0"
+            >
+              刪除圖片
+            </button>
+          </div>
+          <div class="flex space-x-4">
+            <button
+              class="bg-primary text-white px-4 py-2 rounded text-sm"
+              @click="submit"
+              type="button"
+            >
+              确定
+            </button>
+            <button
+              class="bg-primary text-white px-4 py-2 rounded text-sm hidden"
+              @click="close"
+              type="button"
+            >
+              取消
+            </button>
+          </div>
         </div>
+        <vCropper
+          :aspectRatio="0"
+          v-if="file"
+          :file="file"
+          @cancel="cancel"
+          @submit="upload"
+        />
       </div>
-      <vCropper
-        :aspectRatio="0"
-        v-if="file"
-        :file="file"
-        @cancel="cancel"
-        @submit="upload"
-      />
     </div>
     <input
       type="file"
@@ -59,19 +86,19 @@
       class="hidden"
       @change="selected"
     />
-  </modal>
+  </van-popup>
 </template>
 
 <script>
 import { first } from "lodash";
 import vCropper from "@luminexs/components/image/ImageCropper.vue";
 import { XIcon } from "@vue-hero-icons/outline";
-import Modal from "@luminexs/components/modal/Modal.vue";
+
 import { serialize } from "object-to-formdata";
 import loadingModule from "@luminexs/gallery/src/components/icons/Loading.vue";
 import Pagination from "./Pagination.vue";
 export default {
-  components: { vCropper, loadingModule, Modal, XIcon, Pagination },
+  components: { vCropper, loadingModule, XIcon, Pagination },
   props: {
     http: {
       type: Function,
@@ -85,6 +112,7 @@ export default {
 
   data() {
     return {
+      visible: false,
       loading: false,
       aspectRatio: [1, 1],
       file: null,
@@ -118,6 +146,7 @@ export default {
     // 獲取圖片
     async fetch(gallery, page) {
       if (gallery) this.collection = gallery;
+      this.visible = true;
       try {
         this.loading = true;
         let { data } = await this.http.get("api/gallery", {
@@ -134,8 +163,11 @@ export default {
         this.loading = false;
       }
     },
+
+    // 關閉
     close() {
       this.images = [];
+      this.$refs.popup.close();
       this.$emit("close");
     },
 
@@ -157,7 +189,7 @@ export default {
       }
 
       console.log(this.images.length, this.maxImages);
-      
+
       // check max images
       if (this.images.length >= this.maxImages) {
         alert("最多只能選擇" + this.maxImages + "張圖片");
